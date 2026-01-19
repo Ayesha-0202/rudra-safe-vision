@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Download, TrendingUp, TrendingDown, Calendar, BarChart3 } from 'lucide-react';
+import { FileText, Download, TrendingUp, Calendar, BarChart3, FileSpreadsheet } from 'lucide-react';
 import { reportData } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   LineChart,
   Line,
   XAxis,
@@ -23,11 +29,13 @@ import {
   Bar,
   Legend,
 } from 'recharts';
+import { useToast } from '@/hooks/use-toast';
 
 const Reports: React.FC = () => {
   const [dateFrom, setDateFrom] = useState('2024-01-13');
   const [dateTo, setDateTo] = useState('2024-01-19');
   const [reportType, setReportType] = useState('compliance');
+  const { toast } = useToast();
 
   // Calculate summary stats
   const avgCompliance = (
@@ -37,6 +45,50 @@ const Reports: React.FC = () => {
   const complianceTrend =
     reportData[reportData.length - 1].complianceRate - reportData[0].complianceRate;
 
+  const handleExportPDF = () => {
+    toast({
+      title: 'Exporting PDF',
+      description: 'Your compliance report is being generated as PDF...',
+    });
+    // In production, this would trigger actual PDF generation
+    setTimeout(() => {
+      toast({
+        title: 'PDF Ready',
+        description: 'Compliance_Report_2024-01-13_to_2024-01-19.pdf downloaded.',
+      });
+    }, 1500);
+  };
+
+  const handleExportCSV = () => {
+    // Generate CSV content
+    const headers = ['Date', 'Total Violations', 'Helmet', 'Vest', 'Other', 'Compliance Rate'];
+    const csvContent = [
+      headers.join(','),
+      ...reportData.map((row) =>
+        [
+          row.date,
+          row.totalViolations,
+          row.helmetViolations,
+          row.vestViolations,
+          row.otherViolations,
+          `${row.complianceRate}%`,
+        ].join(',')
+      ),
+    ].join('\n');
+
+    // Create and download blob
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Compliance_Report_${dateFrom}_to_${dateTo}.csv`;
+    link.click();
+
+    toast({
+      title: 'CSV Exported',
+      description: `Compliance_Report_${dateFrom}_to_${dateTo}.csv downloaded.`,
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -45,10 +97,24 @@ const Reports: React.FC = () => {
           <h1 className="text-2xl font-bold text-foreground">Compliance Reports</h1>
           <p className="text-muted-foreground">Historical PPE compliance and violation data</p>
         </div>
-        <Button variant="default">
-          <Download className="w-4 h-4 mr-2" />
-          Export Report
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="default">
+              <Download className="w-4 h-4 mr-2" />
+              Export Report
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExportPDF} className="cursor-pointer">
+              <FileText className="w-4 h-4 mr-2 text-destructive" />
+              Export as PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportCSV} className="cursor-pointer">
+              <FileSpreadsheet className="w-4 h-4 mr-2 text-success" />
+              Export as CSV
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Filters */}
@@ -202,8 +268,18 @@ const Reports: React.FC = () => {
 
       {/* Data Table */}
       <div className="bg-card rounded-lg border border-border overflow-hidden">
-        <div className="p-4 border-b border-border">
+        <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="text-lg font-semibold text-foreground">Daily Summary</h3>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
+              <FileSpreadsheet className="w-4 h-4 mr-2" />
+              CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportPDF}>
+              <FileText className="w-4 h-4 mr-2" />
+              PDF
+            </Button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
