@@ -1,6 +1,7 @@
 import React from 'react';
-import { Shield, Bell, User, Activity } from 'lucide-react';
+import { Shield, Bell, User, Activity, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,9 +10,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'Manager':
+        return 'bg-primary/10 text-primary border-primary/20';
+      case 'Admin':
+        return 'bg-destructive/10 text-destructive border-destructive/20';
+      case 'Safety Officer':
+        return 'bg-success/10 text-success border-success/20';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-border z-50 flex items-center justify-between px-6">
@@ -32,6 +48,15 @@ const Header: React.FC = () => {
           <span className="text-sm font-medium text-success">System Online</span>
         </div>
 
+        {/* Theme Toggle */}
+        <Button variant="ghost" size="icon" onClick={toggleTheme} className="relative">
+          {theme === 'light' ? (
+            <Moon className="w-5 h-5 text-muted-foreground" />
+          ) : (
+            <Sun className="w-5 h-5 text-muted-foreground" />
+          )}
+        </Button>
+
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5 text-muted-foreground" />
@@ -47,7 +72,9 @@ const Header: React.FC = () => {
               </div>
               <div className="text-left hidden sm:block">
                 <p className="text-sm font-medium text-foreground">{user?.name}</p>
-                <p className="text-xs text-muted-foreground">{user?.role}</p>
+                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${getRoleBadgeColor(user?.role || '')}`}>
+                  {user?.role}
+                </Badge>
               </div>
             </Button>
           </DropdownMenuTrigger>

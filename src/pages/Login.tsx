@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Shield, User, Lock, ArrowRight } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { Shield, User, Lock, ArrowRight, UserCog } from 'lucide-react';
+import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
 const Login: React.FC = () => {
   const [employeeId, setEmployeeId] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<UserRole | ''>('');
   const [isLoading, setIsLoading] = useState(false);
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -21,14 +29,24 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!role) {
+      toast({
+        title: 'Role Required',
+        description: 'Please select your role before logging in.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const success = await login(employeeId, password);
+      const success = await login(employeeId, password, role);
       if (success) {
         toast({
           title: 'Welcome back!',
-          description: 'Successfully logged into the Safety Monitoring System.',
+          description: `Successfully logged in as ${role}.`,
         });
         navigate('/dashboard');
       } else {
@@ -137,10 +155,29 @@ const Login: React.FC = () => {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="role" className="text-sm font-medium text-foreground">
+                Role <span className="text-destructive">*</span>
+              </Label>
+              <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                <SelectTrigger className="h-12">
+                  <div className="flex items-center gap-2">
+                    <UserCog className="w-5 h-5 text-muted-foreground" />
+                    <SelectValue placeholder="Select your role" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Manager">Manager</SelectItem>
+                  <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="Safety Officer">Safety Officer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <Button
               type="submit"
               className="w-full h-12 text-base font-medium"
-              disabled={isLoading}
+              disabled={isLoading || !role}
             >
               {isLoading ? (
                 'Signing in...'

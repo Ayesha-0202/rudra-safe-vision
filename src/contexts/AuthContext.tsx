@@ -1,15 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+export type UserRole = 'Manager' | 'Admin' | 'Safety Officer';
+
 interface User {
   employeeId: string;
   name: string;
-  role: string;
+  role: UserRole;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (employeeId: string, password: string) => Promise<boolean>;
+  login: (employeeId: string, password: string, role: UserRole) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -25,13 +27,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  const login = async (employeeId: string, password: string): Promise<boolean> => {
+  const login = async (employeeId: string, password: string, role: UserRole): Promise<boolean> => {
     // Mock authentication - in production, this would call an API
-    if (employeeId && password.length >= 4) {
+    if (employeeId && password.length >= 4 && role) {
       const userData: User = {
         employeeId,
-        name: `Operator ${employeeId}`,
-        role: 'Safety Monitor',
+        name: `${role} ${employeeId}`,
+        role,
       };
       setUser(userData);
       localStorage.setItem('safety_monitor_user', JSON.stringify(userData));

@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   AlertTriangle,
   Clock,
   MapPin,
   Camera,
-  CheckCircle,
   Eye,
-  Filter,
   X,
 } from 'lucide-react';
 import { violations, Violation } from '@/data/mockData';
@@ -28,12 +26,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-
-const severityStyles = {
-  high: 'border-l-destructive',
-  medium: 'border-l-warning',
-  low: 'border-l-muted-foreground',
-};
 
 const severityBadgeStyles = {
   high: 'bg-destructive/10 text-destructive border-destructive/20',
@@ -66,10 +58,10 @@ const Alerts: React.FC = () => {
   });
 
   const activeCount = violations.filter((v) => v.status === 'active').length;
-  const acknowledgedCount = violations.filter((v) => v.status === 'acknowledged').length;
+  const totalToday = violations.length;
 
   // Check for URL-selected violation
-  React.useEffect(() => {
+  useEffect(() => {
     const selectedId = searchParams.get('selected');
     if (selectedId) {
       const violation = violations.find((v) => v.id === selectedId);
@@ -87,14 +79,8 @@ const Alerts: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">PPE Violation Alerts</h1>
           <p className="text-muted-foreground">
-            {activeCount} active, {acknowledgedCount} acknowledged
+            {activeCount} active alerts • {totalToday} total today
           </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Acknowledge All
-          </Button>
         </div>
       </div>
 
@@ -110,28 +96,33 @@ const Alerts: React.FC = () => {
           )}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Active</span>
+            <span className="text-sm font-medium text-muted-foreground">Active Alerts</span>
             <div className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
           </div>
           <p className="text-2xl font-bold text-foreground mt-1">{activeCount}</p>
         </div>
         <div
-          onClick={() => setStatusFilter('acknowledged')}
+          onClick={() => setSeverityFilter('high')}
           className={cn(
             'p-4 rounded-lg border cursor-pointer transition-all',
-            statusFilter === 'acknowledged'
-              ? 'bg-warning/10 border-warning'
-              : 'bg-card border-border hover:border-warning/50'
+            severityFilter === 'high'
+              ? 'bg-destructive/10 border-destructive'
+              : 'bg-card border-border hover:border-destructive/50'
           )}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Acknowledged</span>
-            <Eye className="w-4 h-4 text-warning" />
+            <span className="text-sm font-medium text-muted-foreground">High Severity</span>
+            <AlertTriangle className="w-4 h-4 text-destructive" />
           </div>
-          <p className="text-2xl font-bold text-foreground mt-1">{acknowledgedCount}</p>
+          <p className="text-2xl font-bold text-foreground mt-1">
+            {violations.filter((v) => v.severity === 'high').length}
+          </p>
         </div>
         <div
-          onClick={() => setStatusFilter('all')}
+          onClick={() => {
+            setStatusFilter('all');
+            setSeverityFilter('all');
+          }}
           className={cn(
             'p-4 rounded-lg border cursor-pointer transition-all',
             statusFilter === 'all' && severityFilter === 'all'
@@ -141,9 +132,9 @@ const Alerts: React.FC = () => {
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">Total Today</span>
-            <AlertTriangle className="w-4 h-4 text-primary" />
+            <Eye className="w-4 h-4 text-primary" />
           </div>
-          <p className="text-2xl font-bold text-foreground mt-1">{violations.length}</p>
+          <p className="text-2xl font-bold text-foreground mt-1">{totalToday}</p>
         </div>
       </div>
 
@@ -199,8 +190,10 @@ const Alerts: React.FC = () => {
             key={violation.id}
             onClick={() => setSelectedViolation(violation)}
             className={cn(
-              'bg-card rounded-lg border-l-4 p-4 shadow-sm cursor-pointer transition-all hover:shadow-md animate-fade-in',
-              severityStyles[violation.severity]
+              'rounded-lg border p-4 cursor-pointer transition-all hover:shadow-md animate-fade-in',
+              violation.status === 'active' 
+                ? 'bg-[hsl(var(--alert-highlight))] border-l-4 border-l-destructive/60 border-t-border border-r-border border-b-border'
+                : 'bg-card border-border'
             )}
             style={{ animationDelay: `${index * 30}ms` }}
           >
@@ -215,7 +208,7 @@ const Alerts: React.FC = () => {
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <h4 className="font-semibold text-foreground">{violation.type}</h4>
                     <Badge variant="outline" className={severityBadgeStyles[violation.severity]}>
                       {violation.severity}
@@ -224,41 +217,26 @@ const Alerts: React.FC = () => {
                       {violation.status}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 text-sm">
                     <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Camera className="w-4 h-4" />
+                      <Camera className="w-4 h-4 flex-shrink-0" />
                       <span>{violation.cameraId}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
+                      <MapPin className="w-4 h-4 flex-shrink-0" />
                       <span className="truncate">{violation.location}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Clock className="w-4 h-4" />
+                      <Clock className="w-4 h-4 flex-shrink-0" />
                       <span>{violation.timestamp}</span>
                     </div>
                     {violation.employeeId && (
                       <div className="text-muted-foreground">
-                        <span className="text-xs">ID: {violation.employeeId}</span>
+                        <span className="text-xs">Employee: {violation.employeeId}</span>
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
-              <div className="flex gap-2 flex-shrink-0">
-                {violation.status === 'active' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Handle acknowledge
-                    }}
-                  >
-                    <Eye className="w-4 h-4 mr-1" />
-                    Acknowledge
-                  </Button>
-                )}
               </div>
             </div>
           </div>
@@ -322,12 +300,6 @@ const Alerts: React.FC = () => {
 
               {/* Actions */}
               <div className="flex gap-3 pt-2">
-                {selectedViolation.status === 'active' && (
-                  <Button className="flex-1">
-                    <Eye className="w-4 h-4 mr-2" />
-                    Acknowledge
-                  </Button>
-                )}
                 <Button variant="outline" className="flex-1">
                   <Camera className="w-4 h-4 mr-2" />
                   View Camera
