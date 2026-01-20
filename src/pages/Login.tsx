@@ -119,6 +119,25 @@ const Login: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
+              <Label htmlFor="role" className="text-sm font-medium text-foreground">
+                Role <span className="text-destructive">*</span>
+              </Label>
+              <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                <SelectTrigger className="h-12">
+                  <div className="flex items-center gap-2">
+                    <UserCog className="w-5 h-5 text-muted-foreground" />
+                    <SelectValue placeholder="Select your role" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Manager">Manager</SelectItem>
+                  <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="Safety Officer">Safety Officer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="employeeId" className="text-sm font-medium text-foreground">
                 Employee ID
               </Label>
@@ -153,25 +172,6 @@ const Login: React.FC = () => {
                   minLength={4}
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role" className="text-sm font-medium text-foreground">
-                Role <span className="text-destructive">*</span>
-              </Label>
-              <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-                <SelectTrigger className="h-12">
-                  <div className="flex items-center gap-2">
-                    <UserCog className="w-5 h-5 text-muted-foreground" />
-                    <SelectValue placeholder="Select your role" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Manager">Manager</SelectItem>
-                  <SelectItem value="Admin">Admin</SelectItem>
-                  <SelectItem value="Safety Officer">Safety Officer</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
 
             <Button
