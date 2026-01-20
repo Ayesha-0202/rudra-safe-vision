@@ -5,11 +5,11 @@ import {
   Video,
   AlertTriangle,
   FileText,
-  Film,
   Upload,
   Settings,
   ChevronLeft,
   ChevronRight,
+  Wifi,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,10 +22,10 @@ interface SidebarProps {
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/cameras', label: 'Live Cameras', icon: Video },
+  { path: '/video-upload', label: 'Video Upload', icon: Upload },
+  { path: '/device-connection', label: 'Device Connection', icon: Wifi },
   { path: '/alerts', label: 'Alerts', icon: AlertTriangle },
   { path: '/reports', label: 'Reports', icon: FileText },
-  { path: '/footage', label: 'Footage Retrieval', icon: Film },
-  { path: '/video-upload', label: 'Video Upload', icon: Upload },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 

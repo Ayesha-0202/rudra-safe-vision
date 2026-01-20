@@ -1,59 +1,57 @@
 import React, { useState } from 'react';
-import { Upload, Video, MapPin, Calendar, Clock, CheckCircle, AlertCircle, X, FileVideo } from 'lucide-react';
+import { Upload, Video, CheckCircle, AlertCircle, X, FileVideo, Clock, AlertTriangle, HardHat } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { cameras } from '@/data/mockData';
+import { Badge } from '@/components/ui/badge';
 
 interface UploadedVideo {
   id: string;
   fileName: string;
-  cameraId: string;
-  location: string;
-  date: string;
-  time: string;
+  uploadedAt: string;
   status: 'uploading' | 'processing' | 'completed' | 'failed';
   progress: number;
   size: string;
+  violations?: { type: string; count: number }[];
 }
 
 const VideoUpload: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [cameraId, setCameraId] = useState('');
-  const [location, setLocation] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
   const [uploadedVideos, setUploadedVideos] = useState<UploadedVideo[]>([
     {
       id: '1',
       fileName: 'warehouse_footage_01.mp4',
-      cameraId: 'CAM-001',
-      location: 'Warehouse A - North',
-      date: '2024-01-15',
-      time: '14:30',
+      uploadedAt: '2024-01-15 14:30',
       status: 'completed',
       progress: 100,
       size: '256 MB',
+      violations: [
+        { type: 'Helmet Missing', count: 3 },
+        { type: 'Safety Vest Missing', count: 2 },
+      ],
     },
     {
       id: '2',
       fileName: 'assembly_line_review.mp4',
-      cameraId: 'CAM-003',
-      location: 'Assembly Line 1',
-      date: '2024-01-14',
-      time: '09:15',
+      uploadedAt: '2024-01-14 09:15',
       status: 'completed',
       progress: 100,
       size: '412 MB',
+      violations: [
+        { type: 'Safety Goggles Missing', count: 5 },
+      ],
+    },
+    {
+      id: '3',
+      fileName: 'entrance_cam_morning.mp4',
+      uploadedAt: '2024-01-13 08:00',
+      status: 'failed',
+      progress: 100,
+      size: '128 MB',
     },
   ]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-
-  const locations = [...new Set(cameras.map(c => c.location))];
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -97,10 +95,7 @@ const VideoUpload: React.FC = () => {
   };
 
   const handleUpload = () => {
-    if (!selectedFile || !cameraId || !location || !date || !time) {
-      alert('Please fill in all required fields');
-      return;
-    }
+    if (!selectedFile) return;
 
     setIsUploading(true);
     setUploadProgress(0);
@@ -108,10 +103,13 @@ const VideoUpload: React.FC = () => {
     const newVideo: UploadedVideo = {
       id: Date.now().toString(),
       fileName: selectedFile.name,
-      cameraId,
-      location,
-      date,
-      time,
+      uploadedAt: new Date().toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
       status: 'uploading',
       progress: 0,
       size: formatFileSize(selectedFile.size),
@@ -138,21 +136,26 @@ const VideoUpload: React.FC = () => {
         )
       );
       
-      // Simulate processing completion
+      // Simulate processing completion with random violations
       setTimeout(() => {
+        const randomViolations = Math.random() > 0.3 ? [
+          { type: 'Helmet Missing', count: Math.floor(Math.random() * 5) + 1 },
+          { type: 'Safety Vest Missing', count: Math.floor(Math.random() * 3) + 1 },
+        ] : [];
+
         setUploadedVideos(prev =>
           prev.map(v =>
-            v.id === newVideo.id ? { ...v, status: 'completed' } : v
+            v.id === newVideo.id ? { 
+              ...v, 
+              status: 'completed',
+              violations: randomViolations 
+            } : v
           )
         );
         setIsUploading(false);
         setSelectedFile(null);
-        setCameraId('');
-        setLocation('');
-        setDate('');
-        setTime('');
         setUploadProgress(0);
-      }, 2000);
+      }, 3000);
     }, 3000);
   };
 
@@ -175,18 +178,18 @@ const VideoUpload: React.FC = () => {
     }
   };
 
-  const getStatusText = (status: UploadedVideo['status']) => {
+  const getStatusBadge = (status: UploadedVideo['status']) => {
     switch (status) {
       case 'completed':
-        return 'PPE Analysis Complete';
+        return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">Completed</Badge>;
       case 'failed':
-        return 'Processing Failed';
+        return <Badge variant="destructive">Failed</Badge>;
       case 'processing':
-        return 'Analyzing for PPE Violations...';
+        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Processing</Badge>;
       case 'uploading':
-        return 'Uploading...';
+        return <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">Uploading</Badge>;
       default:
-        return '';
+        return null;
     }
   };
 
@@ -195,7 +198,7 @@ const VideoUpload: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Video Upload</h1>
         <p className="text-muted-foreground mt-1">
-          Upload recorded CCTV footage for PPE compliance analysis
+          Upload video files for automatic PPE compliance analysis
         </p>
       </div>
 
@@ -208,7 +211,7 @@ const VideoUpload: React.FC = () => {
               Upload Video
             </CardTitle>
             <CardDescription>
-              Select a video file and associate it with camera details for PPE analysis
+              Select a video file to analyze for PPE violations
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -216,7 +219,7 @@ const VideoUpload: React.FC = () => {
             <div
               onDragOver={handleDragOver}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors relative ${
                 selectedFile
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/50 hover:bg-muted/50'
@@ -261,7 +264,6 @@ const VideoUpload: React.FC = () => {
                     accept="video/mp4,video/avi,video/x-msvideo,video/quicktime,video/webm,.avi"
                     onChange={handleFileSelect}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    style={{ position: 'absolute', top: 0, left: 0 }}
                   />
                 </div>
               )}
@@ -287,75 +289,6 @@ const VideoUpload: React.FC = () => {
               </div>
             )}
 
-            {/* Video Details Form */}
-            <div className="space-y-4 pt-4 border-t border-border">
-              <h4 className="font-medium text-foreground">Video Details</h4>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cameraId">Camera ID</Label>
-                  <Select value={cameraId} onValueChange={setCameraId}>
-                    <SelectTrigger id="cameraId">
-                      <SelectValue placeholder="Select camera" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cameras.map(camera => (
-                        <SelectItem key={camera.id} value={camera.id}>
-                          {camera.id}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Select value={location} onValueChange={setLocation}>
-                    <SelectTrigger id="location">
-                      <SelectValue placeholder="Select location" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {locations.map(loc => (
-                        <SelectItem key={loc} value={loc}>
-                          {loc}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="date">Recording Date</Label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="date"
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="time">Recording Time</Label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      id="time"
-                      type="time"
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Upload Progress */}
             {isUploading && (
               <div className="space-y-2">
@@ -370,11 +303,20 @@ const VideoUpload: React.FC = () => {
             {/* Upload Button */}
             <Button
               onClick={handleUpload}
-              disabled={!selectedFile || !cameraId || !location || !date || !time || isUploading}
+              disabled={!selectedFile || isUploading}
               className="w-full"
             >
-              <Upload className="w-4 h-4 mr-2" />
-              {isUploading ? 'Uploading...' : 'Upload & Analyze'}
+              {isUploading ? (
+                <>
+                  <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload
+                </>
+              )}
             </Button>
           </CardContent>
         </Card>
@@ -387,7 +329,7 @@ const VideoUpload: React.FC = () => {
               Upload History
             </CardTitle>
             <CardDescription>
-              Previously uploaded videos and their analysis status
+              Previously uploaded videos and their analysis results
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -408,40 +350,64 @@ const VideoUpload: React.FC = () => {
                         <FileVideo className="w-5 h-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-medium text-foreground truncate">
                             {video.fileName}
                           </p>
-                          {getStatusIcon(video.status)}
+                          {getStatusBadge(video.status)}
                         </div>
                         <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Video className="w-3 h-3" />
-                            {video.cameraId}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {video.location}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {video.date}
-                          </span>
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {video.time}
+                            {video.uploadedAt}
                           </span>
                           <span>{video.size}</span>
                         </div>
-                        <p className={`text-xs mt-2 ${
-                          video.status === 'completed' ? 'text-green-600 dark:text-green-500' :
-                          video.status === 'failed' ? 'text-destructive' :
-                          'text-primary'
-                        }`}>
-                          {getStatusText(video.status)}
-                        </p>
+
+                        {/* Violations Summary */}
+                        {video.status === 'completed' && video.violations && video.violations.length > 0 && (
+                          <div className="mt-3 space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-amber-500" />
+                              Detected Violations:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {video.violations.map((v, idx) => (
+                                <span
+                                  key={idx}
+                                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                                >
+                                  <HardHat className="w-3 h-3" />
+                                  {v.type}: {v.count}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {video.status === 'completed' && (!video.violations || video.violations.length === 0) && (
+                          <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" />
+                            No violations detected
+                          </p>
+                        )}
+
+                        {video.status === 'failed' && (
+                          <p className="text-xs text-destructive mt-2 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            Analysis failed - please try again
+                          </p>
+                        )}
+
+                        {video.status === 'processing' && (
+                          <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+                            <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin" />
+                            Analyzing for PPE violations...
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0">
+                        {getStatusIcon(video.status)}
                       </div>
                     </div>
                   </div>
