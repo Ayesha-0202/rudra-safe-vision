@@ -12,6 +12,7 @@ import Cameras from "@/pages/Cameras";
 import Alerts from "@/pages/Alerts";
 import Reports from "@/pages/Reports";
 import Footage from "@/pages/Footage";
+import VideoUpload from "@/pages/VideoUpload";
 import Settings from "@/pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => (
                 <Route path="/alerts" element={<Alerts />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/footage" element={<Footage />} />
+                <Route path="/video-upload" element={<VideoUpload />} />
                 <Route path="/settings" element={<Settings />} />
               </Route>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />

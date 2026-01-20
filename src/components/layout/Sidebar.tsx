@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   FileText,
   Film,
+  Upload,
   Settings,
   ChevronLeft,
   ChevronRight,
@@ -24,6 +25,7 @@ const navItems = [
   { path: '/alerts', label: 'Alerts', icon: AlertTriangle },
   { path: '/reports', label: 'Reports', icon: FileText },
   { path: '/footage', label: 'Footage Retrieval', icon: Film },
+  { path: '/video-upload', label: 'Video Upload', icon: Upload },
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
