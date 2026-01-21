@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Upload, Video, CheckCircle, AlertCircle, X, FileVideo, Clock, AlertTriangle, HardHat } from 'lucide-react';
+import { Upload, Video, CheckCircle, AlertCircle, X, FileVideo, Clock, AlertTriangle, HardHat, Stethoscope } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import DetectionControls, { PPEDetectionSettings } from '@/components/DetectionControls';
 
 interface UploadedVideo {
   id: string;
@@ -17,6 +18,15 @@ interface UploadedVideo {
 
 const VideoUpload: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [detectionSettings, setDetectionSettings] = useState<PPEDetectionSettings>({
+    enabled: true,
+    helmet: true,
+    goggles: true,
+    vest: true,
+    gloves: true,
+    boots: true,
+    mask: true,
+  });
   const [uploadedVideos, setUploadedVideos] = useState<UploadedVideo[]>([
     {
       id: '1',
@@ -38,6 +48,7 @@ const VideoUpload: React.FC = () => {
       progress: 100,
       size: '412 MB',
       violations: [
+        { type: 'Mask Missing', count: 4 },
         { type: 'Safety Goggles Missing', count: 5 },
       ],
     },
@@ -136,12 +147,15 @@ const VideoUpload: React.FC = () => {
         )
       );
       
-      // Simulate processing completion with random violations
+      // Simulate processing completion with random violations based on enabled detection settings
       setTimeout(() => {
-        const randomViolations = Math.random() > 0.3 ? [
-          { type: 'Helmet Missing', count: Math.floor(Math.random() * 5) + 1 },
-          { type: 'Safety Vest Missing', count: Math.floor(Math.random() * 3) + 1 },
-        ] : [];
+        const possibleViolations = [];
+        if (detectionSettings.helmet) possibleViolations.push({ type: 'Helmet Missing', count: Math.floor(Math.random() * 5) + 1 });
+        if (detectionSettings.vest) possibleViolations.push({ type: 'Safety Vest Missing', count: Math.floor(Math.random() * 3) + 1 });
+        if (detectionSettings.mask) possibleViolations.push({ type: 'Mask Missing', count: Math.floor(Math.random() * 4) + 1 });
+        if (detectionSettings.goggles) possibleViolations.push({ type: 'Goggles Missing', count: Math.floor(Math.random() * 2) + 1 });
+
+        const randomViolations = Math.random() > 0.3 ? possibleViolations.slice(0, 2) : [];
 
         setUploadedVideos(prev =>
           prev.map(v =>
@@ -193,6 +207,13 @@ const VideoUpload: React.FC = () => {
     }
   };
 
+  const getViolationIcon = (type: string) => {
+    if (type.toLowerCase().includes('mask')) {
+      return <Stethoscope className="w-3 h-3" />;
+    }
+    return <HardHat className="w-3 h-3" />;
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -204,122 +225,130 @@ const VideoUpload: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upload Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="w-5 h-5 text-primary" />
-              Upload Video
-            </CardTitle>
-            <CardDescription>
-              Select a video file to analyze for PPE violations
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Drop Zone */}
-            <div
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors relative ${
-                selectedFile
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:border-primary/50 hover:bg-muted/50'
-              }`}
-            >
-              {selectedFile ? (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-center gap-3">
-                    <FileVideo className="w-10 h-10 text-primary" />
-                    <div className="text-left">
-                      <p className="font-medium text-foreground">{selectedFile.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatFileSize(selectedFile.size)}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="w-5 h-5 text-primary" />
+                Upload Video
+              </CardTitle>
+              <CardDescription>
+                Select a video file to analyze for PPE violations
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Drop Zone */}
+              <div
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors relative ${
+                  selectedFile
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                }`}
+              >
+                {selectedFile ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-3">
+                      <FileVideo className="w-10 h-10 text-primary" />
+                      <div className="text-left">
+                        <p className="font-medium text-foreground">{selectedFile.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatFileSize(selectedFile.size)}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={removeFile}
+                        className="ml-auto"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Video className="w-12 h-12 text-muted-foreground mx-auto" />
+                    <div>
+                      <p className="text-foreground font-medium">
+                        Drag and drop your video file here
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        or click to browse
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={removeFile}
-                      className="ml-auto"
-                    >
-                      <X className="w-4 h-4" />
+                    <p className="text-xs text-muted-foreground">
+                      Supported formats: MP4, AVI, MOV, WebM
+                    </p>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/avi,video/x-msvideo,video/quicktime,video/webm,.avi"
+                      onChange={handleFileSelect}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* File Input (visible button) */}
+              {!selectedFile && (
+                <div className="flex justify-center">
+                  <label className="cursor-pointer">
+                    <Button variant="outline" asChild>
+                      <span>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Browse Files
+                      </span>
                     </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Video className="w-12 h-12 text-muted-foreground mx-auto" />
-                  <div>
-                    <p className="text-foreground font-medium">
-                      Drag and drop your video file here
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      or click to browse
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Supported formats: MP4, AVI, MOV, WebM
-                  </p>
-                  <input
-                    type="file"
-                    accept="video/mp4,video/avi,video/x-msvideo,video/quicktime,video/webm,.avi"
-                    onChange={handleFileSelect}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
+                    <input
+                      type="file"
+                      accept="video/mp4,video/avi,video/x-msvideo,video/quicktime,video/webm,.avi"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
               )}
-            </div>
 
-            {/* File Input (visible button) */}
-            {!selectedFile && (
-              <div className="flex justify-center">
-                <label className="cursor-pointer">
-                  <Button variant="outline" asChild>
-                    <span>
-                      <Upload className="w-4 h-4 mr-2" />
-                      Browse Files
-                    </span>
-                  </Button>
-                  <input
-                    type="file"
-                    accept="video/mp4,video/avi,video/x-msvideo,video/quicktime,video/webm,.avi"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            )}
-
-            {/* Upload Progress */}
-            {isUploading && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Uploading...</span>
-                  <span className="font-medium text-foreground">{uploadProgress}%</span>
+              {/* Upload Progress */}
+              {isUploading && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Uploading...</span>
+                    <span className="font-medium text-foreground">{uploadProgress}%</span>
+                  </div>
+                  <Progress value={uploadProgress} className="h-2" />
                 </div>
-                <Progress value={uploadProgress} className="h-2" />
-              </div>
-            )}
-
-            {/* Upload Button */}
-            <Button
-              onClick={handleUpload}
-              disabled={!selectedFile || isUploading}
-              className="w-full"
-            >
-              {isUploading ? (
-                <>
-                  <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload
-                </>
               )}
-            </Button>
-          </CardContent>
-        </Card>
+
+              {/* Upload Button */}
+              <Button
+                onClick={handleUpload}
+                disabled={!selectedFile || isUploading || !detectionSettings.enabled}
+                className="w-full"
+              >
+                {isUploading ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Detection Controls */}
+          <DetectionControls
+            settings={detectionSettings}
+            onSettingsChange={setDetectionSettings}
+          />
+        </div>
 
         {/* Upload History */}
         <Card>
@@ -377,7 +406,7 @@ const VideoUpload: React.FC = () => {
                                   key={idx}
                                   className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400"
                                 >
-                                  <HardHat className="w-3 h-3" />
+                                  {getViolationIcon(v.type)}
                                   {v.type}: {v.count}
                                 </span>
                               ))}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Shield, User, Lock, ArrowRight, UserCog } from 'lucide-react';
+import { Shield, Mail, Lock, ArrowRight, UserCog } from 'lucide-react';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +15,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 const Login: React.FC = () => {
-  const [employeeId, setEmployeeId] = useState('');
+  const [emailId, setEmailId] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole | ''>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +42,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const success = await login(employeeId, password, role);
+      const success = await login(emailId, password, role);
       if (success) {
         toast({
           title: 'Welcome back!',
@@ -130,25 +130,25 @@ const Login: React.FC = () => {
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Manager">Manager</SelectItem>
                   <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="Manager">Manager</SelectItem>
                   <SelectItem value="Safety Officer">Safety Officer</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="employeeId" className="text-sm font-medium text-foreground">
-                Employee ID
+              <Label htmlFor="emailId" className="text-sm font-medium text-foreground">
+                Email ID
               </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
-                  id="employeeId"
-                  type="text"
-                  placeholder="Enter your employee ID"
-                  value={employeeId}
-                  onChange={(e) => setEmployeeId(e.target.value)}
+                  id="emailId"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={emailId}
+                  onChange={(e) => setEmailId(e.target.value)}
                   className="pl-10 h-12"
                   required
                 />
@@ -188,6 +188,21 @@ const Login: React.FC = () => {
                 </>
               )}
             </Button>
+
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
+                onClick={() => {
+                  toast({
+                    title: 'Password Reset',
+                    description: 'Please contact your system administrator to reset your password.',
+                  });
+                }}
+              >
+                Forgot Password?
+              </button>
+            </div>
           </form>
 
           <p className="text-center text-xs text-muted-foreground mt-8">

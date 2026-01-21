@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Video, Wifi, WifiOff, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, RefreshCw, HardHat, Shirt, Glasses, Hand } from 'lucide-react';
+import { Video, Wifi, WifiOff, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, RefreshCw, HardHat, Shirt, Glasses, Hand, Stethoscope } from 'lucide-react';
 import { cameras, violations, Camera } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -11,18 +11,29 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import DetectionControls, { PPEDetectionSettings } from '@/components/DetectionControls';
 
 const violationTypeIcons: Record<string, React.ReactNode> = {
   'Helmet Missing': <HardHat className="w-4 h-4" />,
   'Safety Vest Missing': <Shirt className="w-4 h-4" />,
   'Goggles Missing': <Glasses className="w-4 h-4" />,
   'Gloves Missing': <Hand className="w-4 h-4" />,
+  'Mask Missing': <Stethoscope className="w-4 h-4" />,
 };
 
 const Cameras: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCamera, setSelectedCamera] = useState<Camera>(cameras[0]);
   const [isSelectorOpen, setIsSelectorOpen] = useState(true);
+  const [detectionSettings, setDetectionSettings] = useState<PPEDetectionSettings>({
+    enabled: true,
+    helmet: true,
+    goggles: true,
+    vest: true,
+    gloves: true,
+    boots: true,
+    mask: true,
+  });
 
   // Get violations for selected camera
   const cameraViolations = violations.filter(
@@ -109,6 +120,13 @@ const Cameras: React.FC = () => {
                   </div>
                 </div>
               )}
+              {/* Detection status overlay */}
+              {detectionSettings.enabled && selectedCamera.status === 'online' && (
+                <div className="absolute top-4 left-4 bg-foreground/70 text-background px-3 py-1.5 rounded text-sm font-medium flex items-center gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  Detection Active
+                </div>
+              )}
               {/* Timestamp overlay */}
               <div className="absolute bottom-4 left-4 bg-foreground/70 text-background px-3 py-1.5 rounded text-sm font-mono">
                 {new Date().toLocaleString()}
@@ -118,7 +136,14 @@ const Cameras: React.FC = () => {
         </div>
 
         {/* Context Information Panel */}
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Detection Controls */}
+          <DetectionControls
+            settings={detectionSettings}
+            onSettingsChange={setDetectionSettings}
+            compact
+          />
+
           {/* PPE Status */}
           <div className="bg-card rounded-lg border border-border p-4">
             <h3 className="text-sm font-medium text-muted-foreground mb-3">PPE Status</h3>
