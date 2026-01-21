@@ -230,11 +230,6 @@ const Alerts: React.FC = () => {
                       <Clock className="w-4 h-4 flex-shrink-0" />
                       <span>{violation.timestamp}</span>
                     </div>
-                    {violation.employeeId && (
-                      <div className="text-muted-foreground">
-                        <span className="text-xs">Employee: {violation.employeeId}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -252,7 +247,7 @@ const Alerts: React.FC = () => {
 
       {/* Violation Detail Dialog */}
       <Dialog open={!!selectedViolation} onOpenChange={() => setSelectedViolation(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-destructive" />
@@ -261,37 +256,37 @@ const Alerts: React.FC = () => {
           </DialogHeader>
           {selectedViolation && (
             <div className="space-y-4">
-              {/* Snapshot placeholder */}
+              {/* Compact snapshot placeholder */}
               <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 rounded-lg flex items-center justify-center">
-                <Camera className="w-16 h-16 text-muted-foreground/30" />
+                <Camera className="w-12 h-12 text-muted-foreground/30" />
               </div>
 
-              {/* Details Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">Violation Type</p>
-                  <p className="font-medium text-foreground">{selectedViolation.type}</p>
+              {/* Details Grid - Compact */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Violation Type</p>
+                  <p className="font-medium text-foreground text-sm">{selectedViolation.type}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">Severity</p>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Severity</p>
                   <Badge className={severityBadgeStyles[selectedViolation.severity]}>
                     {selectedViolation.severity}
                   </Badge>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">Camera</p>
-                  <p className="font-medium text-foreground">{selectedViolation.cameraId}</p>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Camera</p>
+                  <p className="font-medium text-foreground text-sm">{selectedViolation.cameraId}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">Location</p>
-                  <p className="font-medium text-foreground">{selectedViolation.location}</p>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Location</p>
+                  <p className="font-medium text-foreground text-sm">{selectedViolation.location}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">Timestamp</p>
-                  <p className="font-medium text-foreground">{selectedViolation.timestamp}</p>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Timestamp</p>
+                  <p className="font-medium text-foreground text-sm">{selectedViolation.timestamp}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-4">
-                  <p className="text-sm text-muted-foreground">Status</p>
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-xs text-muted-foreground">Status</p>
                   <Badge className={statusBadgeStyles[selectedViolation.status]}>
                     {selectedViolation.status}
                   </Badge>

@@ -11,10 +11,9 @@ export interface Violation {
   cameraId: string;
   location: string;
   timestamp: string;
-  type: 'Helmet Missing' | 'Safety Vest Missing' | 'Goggles Missing' | 'Gloves Missing' | 'Safety Boots Missing';
+  type: 'Helmet Missing' | 'Safety Vest Missing' | 'Goggles Missing' | 'Gloves Missing' | 'Safety Boots Missing' | 'Mask Missing';
   severity: 'high' | 'medium' | 'low';
   status: 'active' | 'resolved' | 'acknowledged';
-  employeeId?: string;
 }
 
 export interface ReportData {
@@ -42,14 +41,14 @@ export const cameras: Camera[] = [
 ];
 
 export const violations: Violation[] = [
-  { id: 'VIO-001', cameraId: 'CAM-002', location: 'Assembly Line 1', timestamp: '2024-01-19 14:32:15', type: 'Helmet Missing', severity: 'high', status: 'active', employeeId: 'EMP-1234' },
-  { id: 'VIO-002', cameraId: 'CAM-004', location: 'Warehouse Section A', timestamp: '2024-01-19 14:28:42', type: 'Safety Vest Missing', severity: 'medium', status: 'active', employeeId: 'EMP-5678' },
+  { id: 'VIO-001', cameraId: 'CAM-002', location: 'Assembly Line 1', timestamp: '2024-01-19 14:32:15', type: 'Helmet Missing', severity: 'high', status: 'active' },
+  { id: 'VIO-002', cameraId: 'CAM-004', location: 'Warehouse Section A', timestamp: '2024-01-19 14:28:42', type: 'Safety Vest Missing', severity: 'medium', status: 'active' },
   { id: 'VIO-003', cameraId: 'CAM-006', location: 'Loading Dock 1', timestamp: '2024-01-19 14:25:10', type: 'Goggles Missing', severity: 'medium', status: 'acknowledged' },
-  { id: 'VIO-004', cameraId: 'CAM-008', location: 'Chemical Storage', timestamp: '2024-01-19 14:20:33', type: 'Gloves Missing', severity: 'high', status: 'active', employeeId: 'EMP-9012' },
+  { id: 'VIO-004', cameraId: 'CAM-008', location: 'Chemical Storage', timestamp: '2024-01-19 14:20:33', type: 'Gloves Missing', severity: 'high', status: 'active' },
   { id: 'VIO-005', cameraId: 'CAM-009', location: 'Welding Station', timestamp: '2024-01-19 14:15:55', type: 'Safety Boots Missing', severity: 'low', status: 'resolved' },
   { id: 'VIO-006', cameraId: 'CAM-002', location: 'Assembly Line 1', timestamp: '2024-01-19 14:10:22', type: 'Helmet Missing', severity: 'high', status: 'active' },
   { id: 'VIO-007', cameraId: 'CAM-003', location: 'Assembly Line 2', timestamp: '2024-01-19 14:05:18', type: 'Safety Vest Missing', severity: 'medium', status: 'acknowledged' },
-  { id: 'VIO-008', cameraId: 'CAM-007', location: 'Loading Dock 2', timestamp: '2024-01-19 13:58:44', type: 'Helmet Missing', severity: 'high', status: 'resolved' },
+  { id: 'VIO-008', cameraId: 'CAM-007', location: 'Loading Dock 2', timestamp: '2024-01-19 13:58:44', type: 'Mask Missing', severity: 'medium', status: 'active' },
 ];
 
 export const reportData: ReportData[] = [

@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   Shield,
   HardHat,
-  Eye
+  Eye,
+  Stethoscope
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import DetectionControls, { PPEDetectionSettings } from '@/components/DetectionControls';
 
 type ConnectionStatus = 'disconnected' | 'connecting' | 'awaiting_approval' | 'connected' | 'failed';
 type AnalysisStatus = 'idle' | 'running' | 'stopped';
@@ -45,6 +47,15 @@ const DeviceConnection: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [connectedDeviceIp, setConnectedDeviceIp] = useState('');
   const [violations, setViolations] = useState<DetectedViolation[]>([]);
+  const [detectionSettings, setDetectionSettings] = useState<PPEDetectionSettings>({
+    enabled: true,
+    helmet: true,
+    goggles: true,
+    vest: true,
+    gloves: true,
+    boots: true,
+    mask: true,
+  });
 
   // Simulate incoming connection request (for demo purposes)
   useEffect(() => {
@@ -63,16 +74,19 @@ const DeviceConnection: React.FC = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Simulate PPE violations when analysis is running
+  // Simulate PPE violations when analysis is running based on detection settings
   useEffect(() => {
     if (analysisStatus !== 'running') return;
 
-    const violationTypes = [
-      'Helmet Missing',
-      'Safety Vest Missing',
-      'Safety Goggles Missing',
-      'Gloves Missing',
-    ];
+    const violationTypes: string[] = [];
+    if (detectionSettings.helmet) violationTypes.push('Helmet Missing');
+    if (detectionSettings.vest) violationTypes.push('Safety Vest Missing');
+    if (detectionSettings.goggles) violationTypes.push('Safety Goggles Missing');
+    if (detectionSettings.gloves) violationTypes.push('Gloves Missing');
+    if (detectionSettings.boots) violationTypes.push('Safety Boots Missing');
+    if (detectionSettings.mask) violationTypes.push('Mask Missing');
+
+    if (violationTypes.length === 0) return;
 
     const interval = setInterval(() => {
       if (Math.random() > 0.7) {
@@ -86,7 +100,7 @@ const DeviceConnection: React.FC = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [analysisStatus]);
+  }, [analysisStatus, detectionSettings]);
 
   const validateIpAddress = (ip: string): boolean => {
     const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
@@ -152,6 +166,7 @@ const DeviceConnection: React.FC = () => {
   };
 
   const handleStartAnalysis = () => {
+    if (!detectionSettings.enabled) return;
     setAnalysisStatus('running');
   };
 
@@ -174,6 +189,13 @@ const DeviceConnection: React.FC = () => {
     }
   };
 
+  const getViolationIcon = (type: string) => {
+    if (type.toLowerCase().includes('mask')) {
+      return <Stethoscope className="w-4 h-4 text-amber-600" />;
+    }
+    return <HardHat className="w-4 h-4 text-amber-600" />;
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -185,105 +207,118 @@ const DeviceConnection: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Connection Panel */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wifi className="w-5 h-5 text-primary" />
-              Network Connection
-            </CardTitle>
-            <CardDescription>
-              Enter the IP address of the target device
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="ip">Target Device IP Address</Label>
-              <Input
-                id="ip"
-                type="text"
-                placeholder="192.168.1.100"
-                value={ipAddress}
-                onChange={(e) => setIpAddress(e.target.value)}
-                disabled={connectionStatus !== 'disconnected' && connectionStatus !== 'failed'}
-              />
-              {errorMessage && (
-                <p className="text-sm text-destructive">{errorMessage}</p>
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wifi className="w-5 h-5 text-primary" />
+                Network Connection
+              </CardTitle>
+              <CardDescription>
+                Enter the IP address of the target device
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="ip">Target Device IP Address</Label>
+                <Input
+                  id="ip"
+                  type="text"
+                  placeholder="192.168.1.100"
+                  value={ipAddress}
+                  onChange={(e) => setIpAddress(e.target.value)}
+                  disabled={connectionStatus !== 'disconnected' && connectionStatus !== 'failed'}
+                />
+                {errorMessage && (
+                  <p className="text-sm text-destructive">{errorMessage}</p>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Status:</span>
+                {getStatusBadge()}
+              </div>
+
+              {connectionStatus === 'disconnected' || connectionStatus === 'failed' ? (
+                <Button 
+                  onClick={handleConnect} 
+                  className="w-full"
+                  disabled={!ipAddress}
+                >
+                  <Wifi className="w-4 h-4 mr-2" />
+                  Connect
+                </Button>
+              ) : connectionStatus === 'connecting' || connectionStatus === 'awaiting_approval' ? (
+                <Button disabled className="w-full">
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {connectionStatus === 'connecting' ? 'Connecting...' : 'Awaiting Approval...'}
+                </Button>
+              ) : (
+                <Button onClick={handleDisconnect} variant="destructive" className="w-full">
+                  <WifiOff className="w-4 h-4 mr-2" />
+                  Disconnect
+                </Button>
               )}
-            </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Status:</span>
-              {getStatusBadge()}
-            </div>
-
-            {connectionStatus === 'disconnected' || connectionStatus === 'failed' ? (
-              <Button 
-                onClick={handleConnect} 
-                className="w-full"
-                disabled={!ipAddress}
-              >
-                <Wifi className="w-4 h-4 mr-2" />
-                Connect
-              </Button>
-            ) : connectionStatus === 'connecting' || connectionStatus === 'awaiting_approval' ? (
-              <Button disabled className="w-full">
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {connectionStatus === 'connecting' ? 'Connecting...' : 'Awaiting Approval...'}
-              </Button>
-            ) : (
-              <Button onClick={handleDisconnect} variant="destructive" className="w-full">
-                <WifiOff className="w-4 h-4 mr-2" />
-                Disconnect
-              </Button>
-            )}
-
-            {connectionStatus === 'connected' && (
-              <div className="pt-4 border-t border-border space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span className="text-foreground">Connected to {connectedDeviceIp}</span>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label>PPE Analysis Control</Label>
-                  <div className="flex gap-2">
-                    {analysisStatus !== 'running' ? (
-                      <Button onClick={handleStartAnalysis} className="flex-1" size="sm">
-                        <Play className="w-4 h-4 mr-2" />
-                        Start Analysis
-                      </Button>
-                    ) : (
-                      <Button onClick={handleStopAnalysis} variant="destructive" className="flex-1" size="sm">
-                        <Square className="w-4 h-4 mr-2" />
-                        Stop Analysis
-                      </Button>
+              {connectionStatus === 'connected' && (
+                <div className="pt-4 border-t border-border space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    <span className="text-foreground">Connected to {connectedDeviceIp}</span>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>PPE Analysis Control</Label>
+                    <div className="flex gap-2">
+                      {analysisStatus !== 'running' ? (
+                        <Button 
+                          onClick={handleStartAnalysis} 
+                          className="flex-1" 
+                          size="sm"
+                          disabled={!detectionSettings.enabled}
+                        >
+                          <Play className="w-4 h-4 mr-2" />
+                          Start Analysis
+                        </Button>
+                      ) : (
+                        <Button onClick={handleStopAnalysis} variant="destructive" className="flex-1" size="sm">
+                          <Square className="w-4 h-4 mr-2" />
+                          Stop Analysis
+                        </Button>
+                      )}
+                    </div>
+                    {analysisStatus === 'running' && (
+                      <div className="flex items-center gap-2 text-sm text-emerald-600">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        Analysis Running
+                      </div>
                     )}
                   </div>
-                  {analysisStatus === 'running' && (
-                    <div className="flex items-center gap-2 text-sm text-emerald-600">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                      Analysis Running
-                    </div>
-                  )}
                 </div>
-              </div>
-            )}
+              )}
 
-            {connectionStatus === 'failed' && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                <div className="flex items-start gap-2">
-                  <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-destructive">Connection Failed</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {errorMessage || 'Unable to connect to the target device. Please verify the IP address and try again.'}
-                    </p>
+              {connectionStatus === 'failed' && (
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <div className="flex items-start gap-2">
+                    <XCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-destructive">Connection Failed</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {errorMessage || 'Unable to connect to the target device. Please verify the IP address and try again.'}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Detection Controls */}
+          <DetectionControls
+            settings={detectionSettings}
+            onSettingsChange={setDetectionSettings}
+          />
+        </div>
 
         {/* Live Feed Section */}
         <Card className="lg:col-span-2">
@@ -342,7 +377,7 @@ const DeviceConnection: React.FC = () => {
                           className="p-3 rounded-lg bg-[hsl(var(--alert-highlight))] border-l-4 border-l-destructive/60 flex items-center justify-between"
                         >
                           <div className="flex items-center gap-3">
-                            <HardHat className="w-4 h-4 text-amber-600" />
+                            {getViolationIcon(violation.type)}
                             <span className="text-sm font-medium text-foreground">{violation.type}</span>
                           </div>
                           <span className="text-xs text-muted-foreground">{violation.timestamp}</span>
