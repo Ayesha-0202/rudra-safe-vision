@@ -79,7 +79,7 @@ const Login: React.FC = () => {
             </div>
           </div>
           <h1 className="text-4xl xl:text-5xl font-bold text-primary-foreground mb-4">
-            Smart Industrial Safety Monitor
+            Rudhra Safe Vision
           </h1>
           <p className="text-lg text-primary-foreground/80 max-w-md">
             24/7 CCTV surveillance and real-time PPE compliance monitoring for industrial safety management.
@@ -109,7 +109,7 @@ const Login: React.FC = () => {
             <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
               <Shield className="w-7 h-7 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">Safety Monitor</h1>
+            <h1 className="text-xl font-bold text-foreground">Rudhra Safe Vision</h1>
           </div>
 
           <div className="text-center mb-8">
