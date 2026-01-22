@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export type UserRole = 'Manager' | 'Admin' | 'Safety Officer';
 
 interface User {
-  employeeId: string;
+  email: string;
   name: string;
   role: UserRole;
 }
@@ -11,7 +12,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (employeeId: string, password: string, role: UserRole) => Promise<boolean>;
+  login: (email: string, password: string, role: UserRole) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -27,12 +28,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  const login = async (employeeId: string, password: string, role: UserRole): Promise<boolean> => {
+  const login = async (email: string, password: string, role: UserRole): Promise<boolean> => {
     // Mock authentication - in production, this would call an API
-    if (employeeId && password.length >= 4 && role) {
+    if (email && password.length >= 4 && role) {
+      const displayName = email.includes('@') ? email.split('@')[0] : email;
       const userData: User = {
-        employeeId,
-        name: `${role} ${employeeId}`,
+        email,
+        name: displayName,
         role,
       };
       setUser(userData);

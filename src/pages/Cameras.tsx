@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Video, Wifi, WifiOff, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, RefreshCw, HardHat, Shirt, Glasses, Hand, Stethoscope } from 'lucide-react';
+import { Video, Wifi, WifiOff, MapPin, AlertTriangle, Clock, ChevronRight, ChevronDown, HardHat, Shirt, Glasses, Hand, Stethoscope, Play, Square } from 'lucide-react';
 import { cameras, violations, Camera } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import DetectionControls, { PPEDetectionSettings } from '@/components/DetectionControls';
 
 const violationTypeIcons: Record<string, React.ReactNode> = {
@@ -24,9 +26,8 @@ const violationTypeIcons: Record<string, React.ReactNode> = {
 const Cameras: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCamera, setSelectedCamera] = useState<Camera>(cameras[0]);
-  const [isSelectorOpen, setIsSelectorOpen] = useState(true);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [detectionSettings, setDetectionSettings] = useState<PPEDetectionSettings>({
-    enabled: true,
     helmet: true,
     goggles: true,
     vest: true,
@@ -52,27 +53,67 @@ const Cameras: React.FC = () => {
     }
   }, [searchParams, setSearchParams]);
 
-  const handleCameraSelect = (camera: Camera) => {
-    setSelectedCamera(camera);
+  const handleCameraSelect = (cameraId: string) => {
+    const camera = cameras.find((c) => c.id === cameraId);
+    if (camera) {
+      setSelectedCamera(camera);
+      setIsAnalyzing(false);
+    }
   };
 
-  const onlineCameras = cameras.filter((c) => c.status === 'online');
-  const offlineCameras = cameras.filter((c) => c.status === 'offline');
+  const toggleAnalysis = () => {
+    setIsAnalyzing(!isAnalyzing);
+  };
 
   return (
     <div className="h-[calc(100vh-8rem)] flex gap-6">
       {/* Main Camera View */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
+        {/* Top Section: Camera Dropdown + Analyze Button */}
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Live Cameras</h1>
-            <p className="text-muted-foreground">Real-time CCTV monitoring</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Live Cameras</h1>
+              <p className="text-muted-foreground">Real-time CCTV monitoring</p>
+            </div>
           </div>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh Feed
-          </Button>
+          <div className="flex items-center gap-3">
+            <Select value={selectedCamera.id} onValueChange={handleCameraSelect}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select camera" />
+              </SelectTrigger>
+              <SelectContent>
+                {cameras.map((camera) => (
+                  <SelectItem key={camera.id} value={camera.id}>
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "w-2 h-2 rounded-full",
+                        camera.status === 'online' ? 'bg-success' : 'bg-muted-foreground'
+                      )} />
+                      {camera.id} - {camera.location}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button 
+              onClick={toggleAnalysis}
+              variant={isAnalyzing ? "destructive" : "default"}
+              disabled={selectedCamera.status === 'offline'}
+            >
+              {isAnalyzing ? (
+                <>
+                  <Square className="w-4 h-4 mr-2" />
+                  Stop Analysis
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 mr-2" />
+                  Start Analysis
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Primary Camera Feed */}
@@ -121,7 +162,7 @@ const Cameras: React.FC = () => {
                 </div>
               )}
               {/* Detection status overlay */}
-              {detectionSettings.enabled && selectedCamera.status === 'online' && (
+              {isAnalyzing && selectedCamera.status === 'online' && (
                 <div className="absolute top-4 left-4 bg-foreground/70 text-background px-3 py-1.5 rounded text-sm font-medium flex items-center gap-2">
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
                   Detection Active
@@ -188,112 +229,55 @@ const Cameras: React.FC = () => {
         </div>
       </div>
 
-      {/* Camera Selector Side Panel */}
-      <div className="w-80 flex flex-col">
-        <Collapsible open={isSelectorOpen} onOpenChange={setIsSelectorOpen}>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-foreground">Camera List</h3>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm">
-                {isSelectorOpen ? (
-                  <ChevronDown className="w-4 h-4" />
-                ) : (
-                  <ChevronRight className="w-4 h-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-          </div>
+      {/* Side Panel: PPE Detection Settings */}
+      <div className="w-72 flex flex-col">
+        <div className="mb-3">
+          <h3 className="font-semibold text-foreground">Detection Settings</h3>
+          <p className="text-xs text-muted-foreground">Configure PPE monitoring</p>
+        </div>
+        
+        <div className="bg-card rounded-lg border border-border p-4">
+          <DetectionControls
+            settings={detectionSettings}
+            onSettingsChange={setDetectionSettings}
+            compact
+          />
+        </div>
 
-          <CollapsibleContent>
-            <ScrollArea className="h-[calc(100vh-14rem)]">
-              <div className="space-y-4 pr-3">
-                {/* Online Cameras */}
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
-                    Online ({onlineCameras.length})
-                  </p>
-                  <div className="space-y-2">
-                    {onlineCameras.map((camera) => (
-                      <div
-                        key={camera.id}
-                        onClick={() => handleCameraSelect(camera)}
-                        className={cn(
-                          'p-3 rounded-lg border cursor-pointer transition-all',
-                          selectedCamera.id === camera.id
-                            ? 'bg-primary/10 border-primary'
-                            : 'bg-card border-border hover:border-primary/50 hover:bg-muted/50'
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-9 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                            <Video className="w-5 h-5 text-muted-foreground/50" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-foreground text-sm">{camera.id}</p>
-                              <span className="w-2 h-2 bg-success rounded-full" />
-                            </div>
-                            <p className="text-xs text-muted-foreground truncate">{camera.location}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {camera.zone}
-                          </span>
-                          <span>{camera.lastUpdate}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Offline Cameras */}
-                {offlineCameras.length > 0 && (
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
-                      Offline ({offlineCameras.length})
-                    </p>
-                    <div className="space-y-2">
-                      {offlineCameras.map((camera) => (
-                        <div
-                          key={camera.id}
-                          onClick={() => handleCameraSelect(camera)}
-                          className={cn(
-                            'p-3 rounded-lg border cursor-pointer transition-all opacity-60',
-                            selectedCamera.id === camera.id
-                              ? 'bg-muted border-muted-foreground/30'
-                              : 'bg-card border-border hover:opacity-80'
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-9 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                              <WifiOff className="w-5 h-5 text-muted-foreground/30" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium text-foreground text-sm">{camera.id}</p>
-                                <span className="w-2 h-2 bg-muted-foreground/50 rounded-full" />
-                              </div>
-                              <p className="text-xs text-muted-foreground truncate">{camera.location}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              {camera.zone}
-                            </span>
-                            <span>{camera.lastUpdate}</span>
-                          </div>
-                        </div>
-                      ))}
+        {/* Camera Quick List */}
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-muted-foreground mb-2">Quick Select</h4>
+          <ScrollArea className="h-[calc(100vh-24rem)]">
+            <div className="space-y-2 pr-3">
+              {cameras.map((camera) => (
+                <div
+                  key={camera.id}
+                  onClick={() => handleCameraSelect(camera.id)}
+                  className={cn(
+                    'p-2 rounded-lg border cursor-pointer transition-all text-sm',
+                    selectedCamera.id === camera.id
+                      ? 'bg-primary/10 border-primary'
+                      : 'bg-card border-border hover:border-primary/50 hover:bg-muted/50'
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "w-2 h-2 rounded-full flex-shrink-0",
+                        camera.status === 'online' ? 'bg-success' : 'bg-muted-foreground/50'
+                      )} />
+                      <span className="font-medium text-foreground">{camera.id}</span>
                     </div>
+                    {selectedCamera.id === camera.id && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0">Selected</Badge>
+                    )}
                   </div>
-                )}
-              </div>
-            </ScrollArea>
-          </CollapsibleContent>
-        </Collapsible>
+                  <p className="text-xs text-muted-foreground mt-1 truncate">{camera.location}</p>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );

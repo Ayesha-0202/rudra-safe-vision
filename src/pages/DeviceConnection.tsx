@@ -48,7 +48,6 @@ const DeviceConnection: React.FC = () => {
   const [connectedDeviceIp, setConnectedDeviceIp] = useState('');
   const [violations, setViolations] = useState<DetectedViolation[]>([]);
   const [detectionSettings, setDetectionSettings] = useState<PPEDetectionSettings>({
-    enabled: true,
     helmet: true,
     goggles: true,
     vest: true,
@@ -166,7 +165,6 @@ const DeviceConnection: React.FC = () => {
   };
 
   const handleStartAnalysis = () => {
-    if (!detectionSettings.enabled) return;
     setAnalysisStatus('running');
   };
 
@@ -275,7 +273,6 @@ const DeviceConnection: React.FC = () => {
                           onClick={handleStartAnalysis} 
                           className="flex-1" 
                           size="sm"
-                          disabled={!detectionSettings.enabled}
                         >
                           <Play className="w-4 h-4 mr-2" />
                           Start Analysis
