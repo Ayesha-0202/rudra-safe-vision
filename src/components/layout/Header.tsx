@@ -24,7 +24,7 @@ const Header: React.FC = () => {
           <Shield className="w-6 h-6 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-lg font-semibold text-foreground">Smart Industrial Safety Monitor</h1>
+          <h1 className="text-lg font-semibold text-foreground">Rudhra Safe Vision</h1>
           <p className="text-xs text-muted-foreground">24/7 CCTV Surveillance & PPE Compliance</p>
         </div>
       </div>
