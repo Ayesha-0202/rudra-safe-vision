@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Settings as SettingsIcon,
   User,
   UserPlus,
   Moon,
   Sun,
-  Save,
   Eye,
   EyeOff,
   Mail,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,8 +29,9 @@ import { useTheme } from '@/contexts/ThemeContext';
 
 const Settings: React.FC = () => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   
   // New user form state
   const [newUserEmail, setNewUserEmail] = useState('');
@@ -119,94 +120,115 @@ const Settings: React.FC = () => {
               <p className="font-mono text-foreground tracking-widest">••••••••</p>
             </div>
           </div>
+          
+          {/* Logout Button */}
+          <div className="pt-4 border-t border-border">
+            <Button 
+              variant="destructive" 
+              onClick={() => {
+                logout();
+                navigate('/login');
+                toast({
+                  title: 'Logged Out',
+                  description: 'You have been successfully logged out.',
+                });
+              }}
+              className="w-full sm:w-auto"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Section 2: Add New User */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-primary" />
-            Add New User
-          </CardTitle>
-          <CardDescription>Create a new user account with role-based access</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="newUserRole">Role</Label>
-            <Select value={newUserRole} onValueChange={(value) => setNewUserRole(value as UserRole)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Admin">Admin</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
-                <SelectItem value="Safety Officer">Safety Officer</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="newUserEmail">Email ID</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="newUserEmail"
-                type="email"
-                placeholder="Enter email address"
-                value={newUserEmail}
-                onChange={(e) => setNewUserEmail(e.target.value)}
-                className="pl-10"
-              />
+      {/* Section 2: Add New User - Admin Only */}
+      {user?.role === 'Admin' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-primary" />
+              Add New User
+            </CardTitle>
+            <CardDescription>Create a new user account with role-based access</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newUserRole">Role</Label>
+              <Select value={newUserRole} onValueChange={(value) => setNewUserRole(value as UserRole)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="Manager">Manager</SelectItem>
+                  <SelectItem value="Safety Officer">Safety Officer</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="newUserPassword">Password</Label>
-            <div className="relative">
-              <Input
-                id="newUserPassword"
-                type={showNewPassword ? 'text' : 'password'}
-                placeholder="Create password"
-                value={newUserPassword}
-                onChange={(e) => setNewUserPassword(e.target.value)}
-                className="pr-10"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-              >
-                {showNewPassword ? (
-                  <EyeOff className="w-4 h-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="w-4 h-4 text-muted-foreground" />
-                )}
-              </Button>
+            <div className="space-y-2">
+              <Label htmlFor="newUserEmail">Email ID</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="newUserEmail"
+                  type="email"
+                  placeholder="Enter email address"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
-          </div>
 
-          <Button 
-            onClick={handleCreateUser} 
-            className="w-full sm:w-auto"
-            disabled={isCreatingUser || !newUserEmail || !newUserPassword || !newUserRole}
-          >
-            {isCreatingUser ? (
-              <>
-                <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Creating...
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Create User
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+            <div className="space-y-2">
+              <Label htmlFor="newUserPassword">Password</Label>
+              <div className="relative">
+                <Input
+                  id="newUserPassword"
+                  type={showNewPassword ? 'text' : 'password'}
+                  placeholder="Create password"
+                  value={newUserPassword}
+                  onChange={(e) => setNewUserPassword(e.target.value)}
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <Button 
+              onClick={handleCreateUser} 
+              className="w-full sm:w-auto"
+              disabled={isCreatingUser || !newUserEmail || !newUserPassword || !newUserRole}
+            >
+              {isCreatingUser ? (
+                <>
+                  <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Create User
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Section 3: Theme Mode */}
       <Card>

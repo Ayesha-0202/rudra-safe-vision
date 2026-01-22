@@ -19,7 +19,6 @@ interface UploadedVideo {
 const VideoUpload: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [detectionSettings, setDetectionSettings] = useState<PPEDetectionSettings>({
-    enabled: true,
     helmet: true,
     goggles: true,
     vest: true,
@@ -325,7 +324,7 @@ const VideoUpload: React.FC = () => {
               {/* Upload Button */}
               <Button
                 onClick={handleUpload}
-                disabled={!selectedFile || isUploading || !detectionSettings.enabled}
+                disabled={!selectedFile || isUploading}
                 className="w-full"
               >
                 {isUploading ? (
