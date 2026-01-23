@@ -36,8 +36,8 @@ const Dashboard: React.FC = () => {
           navigateTo="/cameras"
         />
         <StatCard
-          title="Active Violations"
-          value={stats.activeViolations}
+          title="Today's Violations Count"
+          value={stats.todayViolations}
           icon={AlertTriangle}
           variant="danger"
           trend={{ value: 12, isPositive: false }}
@@ -68,7 +68,7 @@ const Dashboard: React.FC = () => {
               View All
             </Button>
           </div>
-          <CameraGrid cameras={cameras} maxDisplay={6} />
+          <CameraGrid cameras={cameras} maxDisplay={4} />
         </div>
 
         {/* Alerts Section */}

@@ -11,18 +11,6 @@ interface AlertsListProps {
   showViewAll?: boolean;
 }
 
-const severityStyles = {
-  high: 'border-destructive',
-  medium: 'border-warning',
-  low: 'border-muted-foreground',
-};
-
-const severityBadgeStyles = {
-  high: 'bg-destructive/10 text-destructive',
-  medium: 'bg-warning/10 text-warning',
-  low: 'bg-muted text-muted-foreground',
-};
-
 const AlertsList: React.FC<AlertsListProps> = ({
   violations,
   maxDisplay = 5,
@@ -50,32 +38,19 @@ const AlertsList: React.FC<AlertsListProps> = ({
             key={violation.id}
             onClick={() => handleAlertClick(violation.id)}
             className={cn(
-              'alert-card cursor-pointer animate-fade-in',
-              severityStyles[violation.severity]
+              'alert-card cursor-pointer animate-fade-in border-l-4',
+              violation.status === 'active' ? 'border-l-destructive' : 'border-l-warning'
             )}
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3 flex-1">
-                <div
-                  className={cn(
-                    'p-2 rounded-lg flex-shrink-0',
-                    severityBadgeStyles[violation.severity]
-                  )}
-                >
+                <div className="p-2 rounded-lg flex-shrink-0 bg-destructive/10 text-destructive">
                   <AlertTriangle className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="font-medium text-foreground">{violation.type}</h4>
-                    <span
-                      className={cn(
-                        'text-xs px-2 py-0.5 rounded-full capitalize',
-                        severityBadgeStyles[violation.severity]
-                      )}
-                    >
-                      {violation.severity}
-                    </span>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">

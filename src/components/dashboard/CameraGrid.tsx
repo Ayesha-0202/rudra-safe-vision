@@ -54,7 +54,7 @@ const CameraGrid: React.FC<CameraGridProps> = ({ cameras, maxDisplay = 6 }) => {
                 <h4 className="font-medium text-foreground text-sm">{camera.location}</h4>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                   <MapPin className="w-3 h-3" />
-                  {camera.zone}
+                  {camera.id}
                 </div>
               </div>
               <span className="text-xs text-muted-foreground">{camera.lastUpdate}</span>

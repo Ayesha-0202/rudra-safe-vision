@@ -5,8 +5,8 @@ import {
   Clock,
   MapPin,
   Camera,
-  Eye,
-  X,
+  Search,
+  CheckCircle,
 } from 'lucide-react';
 import { violations, Violation } from '@/data/mockData';
 import { cn } from '@/lib/utils';
@@ -14,51 +14,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 
-const severityBadgeStyles = {
-  high: 'bg-destructive/10 text-destructive border-destructive/20',
-  medium: 'bg-warning/10 text-warning border-warning/20',
-  low: 'bg-muted text-muted-foreground border-muted-foreground/20',
-};
-
-const statusBadgeStyles = {
-  active: 'bg-destructive/10 text-destructive',
-  acknowledged: 'bg-warning/10 text-warning',
-  resolved: 'bg-success/10 text-success',
-};
-
 const Alerts: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
-  const [severityFilter, setSeverityFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedViolation, setSelectedViolation] = useState<Violation | null>(null);
 
-  // Filter violations
+  // Filter violations by search only
   const filteredViolations = violations.filter((violation) => {
     const matchesSearch =
       violation.cameraId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       violation.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       violation.type.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSeverity = severityFilter === 'all' || violation.severity === severityFilter;
-    const matchesStatus = statusFilter === 'all' || violation.status === statusFilter;
-    return matchesSearch && matchesSeverity && matchesStatus;
+    return matchesSearch;
   });
 
-  const activeCount = violations.filter((v) => v.status === 'active').length;
   const totalToday = violations.length;
+  const acknowledgedCount = violations.filter((v) => v.status === 'acknowledged').length;
 
   // Check for URL-selected violation
   useEffect(() => {
@@ -75,112 +52,38 @@ const Alerts: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">PPE Violation Alerts</h1>
-          <p className="text-muted-foreground">
-            {activeCount} active alerts • {totalToday} total today
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">PPE Violation Alerts</h1>
+        <p className="text-muted-foreground">Monitor and manage safety violations</p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div
-          onClick={() => setStatusFilter('active')}
-          className={cn(
-            'p-4 rounded-lg border cursor-pointer transition-all',
-            statusFilter === 'active'
-              ? 'bg-destructive/10 border-destructive'
-              : 'bg-card border-border hover:border-destructive/50'
-          )}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Active Alerts</span>
-            <div className="w-2 h-2 bg-destructive rounded-full animate-pulse" />
-          </div>
-          <p className="text-2xl font-bold text-foreground mt-1">{activeCount}</p>
-        </div>
-        <div
-          onClick={() => setSeverityFilter('high')}
-          className={cn(
-            'p-4 rounded-lg border cursor-pointer transition-all',
-            severityFilter === 'high'
-              ? 'bg-destructive/10 border-destructive'
-              : 'bg-card border-border hover:border-destructive/50'
-          )}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">High Severity</span>
-            <AlertTriangle className="w-4 h-4 text-destructive" />
-          </div>
-          <p className="text-2xl font-bold text-foreground mt-1">
-            {violations.filter((v) => v.severity === 'high').length}
-          </p>
-        </div>
-        <div
-          onClick={() => {
-            setStatusFilter('all');
-            setSeverityFilter('all');
-          }}
-          className={cn(
-            'p-4 rounded-lg border cursor-pointer transition-all',
-            statusFilter === 'all' && severityFilter === 'all'
-              ? 'bg-primary/10 border-primary'
-              : 'bg-card border-border hover:border-primary/50'
-          )}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Total Today</span>
-            <Eye className="w-4 h-4 text-primary" />
-          </div>
-          <p className="text-2xl font-bold text-foreground mt-1">{totalToday}</p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           placeholder="Search by camera, location, or type..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="sm:w-72"
+          className="pl-10"
         />
-        <Select value={severityFilter} onValueChange={setSeverityFilter}>
-          <SelectTrigger className="sm:w-40">
-            <SelectValue placeholder="Severity" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Severity</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="sm:w-40">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="acknowledged">Acknowledged</SelectItem>
-            <SelectItem value="resolved">Resolved</SelectItem>
-          </SelectContent>
-        </Select>
-        {(severityFilter !== 'all' || statusFilter !== 'all') && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setSeverityFilter('all');
-              setStatusFilter('all');
-            }}
-          >
-            <X className="w-4 h-4 mr-1" />
-            Clear Filters
-          </Button>
-        )}
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-4 rounded-lg border bg-card border-border">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">Total Violations Today</span>
+            <AlertTriangle className="w-4 h-4 text-destructive" />
+          </div>
+          <p className="text-2xl font-bold text-foreground mt-1">{totalToday}</p>
+        </div>
+        <div className="p-4 rounded-lg border bg-card border-border">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">Total Acknowledged</span>
+            <CheckCircle className="w-4 h-4 text-success" />
+          </div>
+          <p className="text-2xl font-bold text-foreground mt-1">{acknowledgedCount}</p>
+        </div>
       </div>
 
       {/* Alerts List */}
@@ -199,25 +102,21 @@ const Alerts: React.FC = () => {
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4 flex-1">
-                <div
-                  className={cn(
-                    'p-2.5 rounded-lg flex-shrink-0',
-                    severityBadgeStyles[violation.severity]
-                  )}
-                >
+                <div className="p-2.5 rounded-lg flex-shrink-0 bg-destructive/10 text-destructive">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <h4 className="font-semibold text-foreground">{violation.type}</h4>
-                    <Badge variant="outline" className={severityBadgeStyles[violation.severity]}>
-                      {violation.severity}
-                    </Badge>
-                    <Badge variant="secondary" className={statusBadgeStyles[violation.status]}>
+                    <Badge variant="secondary" className={cn(
+                      violation.status === 'active' ? 'bg-destructive/10 text-destructive' :
+                      violation.status === 'acknowledged' ? 'bg-warning/10 text-warning' :
+                      'bg-success/10 text-success'
+                    )}>
                       {violation.status}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2 text-sm">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
                     <div className="flex items-center gap-1.5 text-muted-foreground">
                       <Camera className="w-4 h-4 flex-shrink-0" />
                       <span>{violation.cameraId}</span>
@@ -241,7 +140,7 @@ const Alerts: React.FC = () => {
       {filteredViolations.length === 0 && (
         <div className="text-center py-12">
           <AlertTriangle className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
-          <p className="text-muted-foreground">No violations found matching your filters</p>
+          <p className="text-muted-foreground">No violations found matching your search</p>
         </div>
       )}
 
@@ -268,9 +167,13 @@ const Alerts: React.FC = () => {
                   <p className="font-medium text-foreground text-sm">{selectedViolation.type}</p>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Severity</p>
-                  <Badge className={severityBadgeStyles[selectedViolation.severity]}>
-                    {selectedViolation.severity}
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <Badge className={cn(
+                    selectedViolation.status === 'active' ? 'bg-destructive/10 text-destructive' :
+                    selectedViolation.status === 'acknowledged' ? 'bg-warning/10 text-warning' :
+                    'bg-success/10 text-success'
+                  )}>
+                    {selectedViolation.status}
                   </Badge>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3">
@@ -281,15 +184,9 @@ const Alerts: React.FC = () => {
                   <p className="text-xs text-muted-foreground">Location</p>
                   <p className="font-medium text-foreground text-sm">{selectedViolation.location}</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-3">
+                <div className="bg-muted/50 rounded-lg p-3 col-span-2">
                   <p className="text-xs text-muted-foreground">Timestamp</p>
                   <p className="font-medium text-foreground text-sm">{selectedViolation.timestamp}</p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Status</p>
-                  <Badge className={statusBadgeStyles[selectedViolation.status]}>
-                    {selectedViolation.status}
-                  </Badge>
                 </div>
               </div>
 

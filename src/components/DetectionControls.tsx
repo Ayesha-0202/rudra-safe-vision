@@ -81,7 +81,7 @@ const DetectionControls: React.FC<DetectionControlsProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {ppeItems.map((item) => (
             <div
               key={item.key}
