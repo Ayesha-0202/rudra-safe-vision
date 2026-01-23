@@ -31,6 +31,12 @@ import {
 } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 
+// Helper to format date as DD/MM/YYYY
+const formatDateDDMMYYYY = (dateStr: string) => {
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+};
+
 const Reports: React.FC = () => {
   const [dateFrom, setDateFrom] = useState('2024-01-13');
   const [dateTo, setDateTo] = useState('2024-01-19');
@@ -50,7 +56,6 @@ const Reports: React.FC = () => {
       title: 'Exporting PDF',
       description: 'Your compliance report is being generated as PDF...',
     });
-    // In production, this would trigger actual PDF generation
     setTimeout(() => {
       toast({
         title: 'PDF Ready',
@@ -60,23 +65,24 @@ const Reports: React.FC = () => {
   };
 
   const handleExportCSV = () => {
-    // Generate CSV content
-    const headers = ['Date', 'Total Violations', 'Helmet', 'Vest', 'Other', 'Compliance Rate'];
+    const headers = ['Date', 'Total Violations', 'Helmet', 'Goggles', 'Vest', 'Gloves', 'Boots', 'Mask', 'Compliance Rate'];
     const csvContent = [
       headers.join(','),
       ...reportData.map((row) =>
         [
-          row.date,
+          formatDateDDMMYYYY(row.date),
           row.totalViolations,
           row.helmetViolations,
+          row.gogglesViolations,
           row.vestViolations,
-          row.otherViolations,
+          row.glovesViolations,
+          row.bootsViolations,
+          row.maskViolations,
           `${row.complianceRate}%`,
         ].join(',')
       ),
     ].join('\n');
 
-    // Create and download blob
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -192,7 +198,7 @@ const Reports: React.FC = () => {
             </div>
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            {dateFrom} to {dateTo}
+            {formatDateDDMMYYYY(dateFrom)} to {formatDateDDMMYYYY(dateTo)}
           </p>
         </div>
       </div>
@@ -209,7 +215,7 @@ const Reports: React.FC = () => {
                 <XAxis
                   dataKey="date"
                   tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                  tickFormatter={(value) => value.slice(5)}
+                  tickFormatter={(value) => formatDateDDMMYYYY(value).slice(0, 5)}
                 />
                 <YAxis
                   domain={[85, 100]}
@@ -223,6 +229,7 @@ const Reports: React.FC = () => {
                     borderRadius: '8px',
                   }}
                   formatter={(value: number) => [`${value}%`, 'Compliance Rate']}
+                  labelFormatter={(label) => formatDateDDMMYYYY(label)}
                 />
                 <Line
                   type="monotone"
@@ -246,7 +253,7 @@ const Reports: React.FC = () => {
                 <XAxis
                   dataKey="date"
                   tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                  tickFormatter={(value) => value.slice(5)}
+                  tickFormatter={(value) => formatDateDDMMYYYY(value).slice(0, 5)}
                 />
                 <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
                 <Tooltip
@@ -255,11 +262,15 @@ const Reports: React.FC = () => {
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
                   }}
+                  labelFormatter={(label) => formatDateDDMMYYYY(label)}
                 />
                 <Legend />
                 <Bar dataKey="helmetViolations" name="Helmet" fill="hsl(var(--destructive))" />
-                <Bar dataKey="vestViolations" name="Vest" fill="hsl(var(--warning))" />
-                <Bar dataKey="otherViolations" name="Other" fill="hsl(var(--primary))" />
+                <Bar dataKey="gogglesViolations" name="Goggles" fill="hsl(var(--warning))" />
+                <Bar dataKey="vestViolations" name="Vest" fill="hsl(var(--primary))" />
+                <Bar dataKey="glovesViolations" name="Gloves" fill="hsl(var(--success))" />
+                <Bar dataKey="bootsViolations" name="Boots" fill="hsl(210 40% 60%)" />
+                <Bar dataKey="maskViolations" name="Mask" fill="hsl(280 60% 60%)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -285,36 +296,28 @@ const Reports: React.FC = () => {
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Total Violations
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Helmet
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Vest
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Other
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                  Compliance Rate
-                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Date</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Total</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Helmet</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Goggles</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Vest</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Gloves</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Boots</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Mask</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Compliance</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {reportData.map((row) => (
                 <tr key={row.date} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3 text-sm text-foreground font-medium">{row.date}</td>
+                  <td className="px-4 py-3 text-sm text-foreground font-medium">{formatDateDDMMYYYY(row.date)}</td>
                   <td className="px-4 py-3 text-sm text-foreground">{row.totalViolations}</td>
                   <td className="px-4 py-3 text-sm text-destructive">{row.helmetViolations}</td>
-                  <td className="px-4 py-3 text-sm text-warning">{row.vestViolations}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {row.otherViolations}
-                  </td>
+                  <td className="px-4 py-3 text-sm text-warning">{row.gogglesViolations}</td>
+                  <td className="px-4 py-3 text-sm text-primary">{row.vestViolations}</td>
+                  <td className="px-4 py-3 text-sm text-success">{row.glovesViolations}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{row.bootsViolations}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">{row.maskViolations}</td>
                   <td className="px-4 py-3 text-sm">
                     <span
                       className={`font-medium ${row.complianceRate >= 95 ? 'text-success' : row.complianceRate >= 92 ? 'text-warning' : 'text-destructive'}`}

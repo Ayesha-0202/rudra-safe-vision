@@ -9,6 +9,9 @@ import {
   EyeOff,
   Mail,
   LogOut,
+  Camera,
+  MapPin,
+  Plus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +43,11 @@ const Settings: React.FC = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
 
+  // Camera management state
+  const [newCameraName, setNewCameraName] = useState('');
+  const [newCameraLocation, setNewCameraLocation] = useState('');
+  const [isAddingCamera, setIsAddingCamera] = useState(false);
+
   const handleCreateUser = async () => {
     if (!newUserEmail || !newUserPassword || !newUserRole) {
       toast({
@@ -65,6 +73,32 @@ const Settings: React.FC = () => {
     setNewUserPassword('');
     setNewUserRole('');
     setIsCreatingUser(false);
+  };
+
+  const handleAddCamera = async () => {
+    if (!newCameraName || !newCameraLocation) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please fill in camera name and location.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsAddingCamera(true);
+
+    // Simulate camera addition
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    toast({
+      title: 'Camera Added',
+      description: `Camera "${newCameraName}" added at ${newCameraLocation}`,
+    });
+
+    // Reset form
+    setNewCameraName('');
+    setNewCameraLocation('');
+    setIsAddingCamera(false);
   };
 
   const getRoleBadgeColor = (role: string) => {
@@ -230,7 +264,69 @@ const Settings: React.FC = () => {
         </Card>
       )}
 
-      {/* Section 3: Theme Mode */}
+      {/* Section 3: Camera Management - Admin Only */}
+      {user?.role === 'Admin' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Camera className="w-5 h-5 text-primary" />
+              Camera Management
+            </CardTitle>
+            <CardDescription>Add and manage surveillance cameras</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="cameraName">Camera Name</Label>
+              <div className="relative">
+                <Camera className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="cameraName"
+                  type="text"
+                  placeholder="e.g., CAM-013"
+                  value={newCameraName}
+                  onChange={(e) => setNewCameraName(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cameraLocation">Location</Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="cameraLocation"
+                  type="text"
+                  placeholder="e.g., Main Warehouse Entrance"
+                  value={newCameraLocation}
+                  onChange={(e) => setNewCameraLocation(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+
+            <Button 
+              onClick={handleAddCamera} 
+              className="w-full sm:w-auto"
+              disabled={isAddingCamera || !newCameraName || !newCameraLocation}
+            >
+              {isAddingCamera ? (
+                <>
+                  <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Camera
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Section 4: Theme Mode */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
