@@ -92,12 +92,7 @@ const Alerts: React.FC = () => {
           <div
             key={violation.id}
             onClick={() => setSelectedViolation(violation)}
-            className={cn(
-              'rounded-lg border p-4 cursor-pointer transition-all hover:shadow-md animate-fade-in',
-              violation.status === 'active' 
-                ? 'bg-[hsl(var(--alert-highlight))] border-l-4 border-l-destructive/60 border-t-border border-r-border border-b-border'
-                : 'bg-card border-border'
-            )}
+            className="rounded-lg border border-border bg-card p-4 cursor-pointer transition-all hover:shadow-md animate-fade-in"
             style={{ animationDelay: `${index * 30}ms` }}
           >
             <div className="flex items-start justify-between gap-4">
@@ -108,13 +103,6 @@ const Alerts: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <h4 className="font-semibold text-foreground">{violation.type}</h4>
-                    <Badge variant="secondary" className={cn(
-                      violation.status === 'active' ? 'bg-destructive/10 text-destructive' :
-                      violation.status === 'acknowledged' ? 'bg-warning/10 text-warning' :
-                      'bg-success/10 text-success'
-                    )}>
-                      {violation.status}
-                    </Badge>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
                     <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -165,16 +153,6 @@ const Alerts: React.FC = () => {
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-xs text-muted-foreground">Violation Type</p>
                   <p className="font-medium text-foreground text-sm">{selectedViolation.type}</p>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3">
-                  <p className="text-xs text-muted-foreground">Status</p>
-                  <Badge className={cn(
-                    selectedViolation.status === 'active' ? 'bg-destructive/10 text-destructive' :
-                    selectedViolation.status === 'acknowledged' ? 'bg-warning/10 text-warning' :
-                    'bg-success/10 text-success'
-                  )}>
-                    {selectedViolation.status}
-                  </Badge>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3">
                   <p className="text-xs text-muted-foreground">Camera</p>
