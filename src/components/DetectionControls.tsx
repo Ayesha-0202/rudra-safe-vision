@@ -7,10 +7,8 @@ import { cn } from '@/lib/utils';
 
 export interface PPEDetectionSettings {
   helmet: boolean;
-  goggles: boolean;
   vest: boolean;
   gloves: boolean;
-  boots: boolean;
   mask: boolean;
 }
 
@@ -23,10 +21,8 @@ interface DetectionControlsProps {
 
 const ppeItems = [
   { key: 'helmet', label: 'Helmet', color: 'bg-destructive' },
-  { key: 'goggles', label: 'Goggles', color: 'bg-info' },
   { key: 'vest', label: 'Safety Vest', color: 'bg-warning' },
   { key: 'gloves', label: 'Gloves', color: 'bg-primary' },
-  { key: 'boots', label: 'Safety Boots', color: 'bg-muted-foreground' },
   { key: 'mask', label: 'Mask', color: 'bg-violet-500' },
 ] as const;
 

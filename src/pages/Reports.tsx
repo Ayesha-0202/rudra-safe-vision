@@ -65,7 +65,7 @@ const Reports: React.FC = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ['Date', 'Total Violations', 'Helmet', 'Goggles', 'Vest', 'Gloves', 'Boots', 'Mask', 'Compliance Rate'];
+    const headers = ['Date', 'Total Violations', 'Helmet', 'Vest', 'Gloves', 'Mask', 'Compliance Rate'];
     const csvContent = [
       headers.join(','),
       ...reportData.map((row) =>
@@ -73,10 +73,8 @@ const Reports: React.FC = () => {
           formatDateDDMMYYYY(row.date),
           row.totalViolations,
           row.helmetViolations,
-          row.gogglesViolations,
           row.vestViolations,
           row.glovesViolations,
-          row.bootsViolations,
           row.maskViolations,
           `${row.complianceRate}%`,
         ].join(',')
@@ -266,10 +264,8 @@ const Reports: React.FC = () => {
                 />
                 <Legend />
                 <Bar dataKey="helmetViolations" name="Helmet" fill="hsl(var(--destructive))" />
-                <Bar dataKey="gogglesViolations" name="Goggles" fill="hsl(var(--warning))" />
-                <Bar dataKey="vestViolations" name="Vest" fill="hsl(var(--primary))" />
-                <Bar dataKey="glovesViolations" name="Gloves" fill="hsl(var(--success))" />
-                <Bar dataKey="bootsViolations" name="Boots" fill="hsl(210 40% 60%)" />
+                <Bar dataKey="vestViolations" name="Vest" fill="hsl(var(--warning))" />
+                <Bar dataKey="glovesViolations" name="Gloves" fill="hsl(var(--primary))" />
                 <Bar dataKey="maskViolations" name="Mask" fill="hsl(280 60% 60%)" />
               </BarChart>
             </ResponsiveContainer>
@@ -299,10 +295,8 @@ const Reports: React.FC = () => {
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Date</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Total</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Helmet</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Goggles</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Vest</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Gloves</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Boots</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Mask</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Compliance</th>
               </tr>
@@ -313,10 +307,8 @@ const Reports: React.FC = () => {
                   <td className="px-4 py-3 text-sm text-foreground font-medium">{formatDateDDMMYYYY(row.date)}</td>
                   <td className="px-4 py-3 text-sm text-foreground">{row.totalViolations}</td>
                   <td className="px-4 py-3 text-sm text-destructive">{row.helmetViolations}</td>
-                  <td className="px-4 py-3 text-sm text-warning">{row.gogglesViolations}</td>
-                  <td className="px-4 py-3 text-sm text-primary">{row.vestViolations}</td>
-                  <td className="px-4 py-3 text-sm text-success">{row.glovesViolations}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{row.bootsViolations}</td>
+                  <td className="px-4 py-3 text-sm text-warning">{row.vestViolations}</td>
+                  <td className="px-4 py-3 text-sm text-primary">{row.glovesViolations}</td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">{row.maskViolations}</td>
                   <td className="px-4 py-3 text-sm">
                     <span

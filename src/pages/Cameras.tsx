@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Video, Wifi, WifiOff, MapPin, AlertTriangle, Clock, HardHat, Shirt, Glasses, Hand, Stethoscope, Play, Square } from 'lucide-react';
+import { Video, Wifi, WifiOff, MapPin, AlertTriangle, Clock, HardHat, Shirt, Hand, Stethoscope, Play, Square } from 'lucide-react';
 import { cameras, violations, Camera } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,6 @@ import DetectionControls, { PPEDetectionSettings } from '@/components/DetectionC
 const violationTypeIcons: Record<string, React.ReactNode> = {
   'Helmet Missing': <HardHat className="w-4 h-4" />,
   'Safety Vest Missing': <Shirt className="w-4 h-4" />,
-  'Goggles Missing': <Glasses className="w-4 h-4" />,
   'Gloves Missing': <Hand className="w-4 h-4" />,
   'Mask Missing': <Stethoscope className="w-4 h-4" />,
 };
@@ -28,10 +27,8 @@ const Cameras: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [detectionSettings, setDetectionSettings] = useState<PPEDetectionSettings>({
     helmet: true,
-    goggles: true,
     vest: true,
     gloves: true,
-    boots: true,
     mask: true,
   });
 

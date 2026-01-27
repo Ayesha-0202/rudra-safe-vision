@@ -49,10 +49,8 @@ const DeviceConnection: React.FC = () => {
   const [violations, setViolations] = useState<DetectedViolation[]>([]);
   const [detectionSettings, setDetectionSettings] = useState<PPEDetectionSettings>({
     helmet: true,
-    goggles: true,
     vest: true,
     gloves: true,
-    boots: true,
     mask: true,
   });
 
@@ -80,9 +78,7 @@ const DeviceConnection: React.FC = () => {
     const violationTypes: string[] = [];
     if (detectionSettings.helmet) violationTypes.push('Helmet Missing');
     if (detectionSettings.vest) violationTypes.push('Safety Vest Missing');
-    if (detectionSettings.goggles) violationTypes.push('Safety Goggles Missing');
     if (detectionSettings.gloves) violationTypes.push('Gloves Missing');
-    if (detectionSettings.boots) violationTypes.push('Safety Boots Missing');
     if (detectionSettings.mask) violationTypes.push('Mask Missing');
 
     if (violationTypes.length === 0) return;
