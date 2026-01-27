@@ -20,10 +20,8 @@ const VideoUpload: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [detectionSettings, setDetectionSettings] = useState<PPEDetectionSettings>({
     helmet: true,
-    goggles: true,
     vest: true,
     gloves: true,
-    boots: true,
     mask: true,
   });
   const [uploadedVideos, setUploadedVideos] = useState<UploadedVideo[]>([
@@ -48,7 +46,7 @@ const VideoUpload: React.FC = () => {
       size: '412 MB',
       violations: [
         { type: 'Mask Missing', count: 4 },
-        { type: 'Safety Goggles Missing', count: 5 },
+        { type: 'Gloves Missing', count: 5 },
       ],
     },
     {
@@ -152,7 +150,7 @@ const VideoUpload: React.FC = () => {
         if (detectionSettings.helmet) possibleViolations.push({ type: 'Helmet Missing', count: Math.floor(Math.random() * 5) + 1 });
         if (detectionSettings.vest) possibleViolations.push({ type: 'Safety Vest Missing', count: Math.floor(Math.random() * 3) + 1 });
         if (detectionSettings.mask) possibleViolations.push({ type: 'Mask Missing', count: Math.floor(Math.random() * 4) + 1 });
-        if (detectionSettings.goggles) possibleViolations.push({ type: 'Goggles Missing', count: Math.floor(Math.random() * 2) + 1 });
+        if (detectionSettings.gloves) possibleViolations.push({ type: 'Gloves Missing', count: Math.floor(Math.random() * 2) + 1 });
 
         const randomViolations = Math.random() > 0.3 ? possibleViolations.slice(0, 2) : [];
 
