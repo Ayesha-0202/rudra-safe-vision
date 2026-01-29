@@ -1,5 +1,5 @@
 import React from 'react';
-import { Video, AlertTriangle, ShieldCheck, Camera as CameraIcon } from 'lucide-react';
+import { Video, AlertTriangle } from 'lucide-react';
 import { cameras, violations, getStatistics } from '@/data/mockData';
 import StatCard from '@/components/dashboard/StatCard';
 import CameraGrid from '@/components/dashboard/CameraGrid';
@@ -20,19 +20,12 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCard
           title="Total Cameras"
           value={stats.totalCameras}
           icon={Video}
           variant="default"
-          navigateTo="/cameras"
-        />
-        <StatCard
-          title="Cameras Online"
-          value={`${stats.onlineCameras}/${stats.totalCameras}`}
-          icon={CameraIcon}
-          variant="success"
           navigateTo="/cameras"
         />
         <StatCard
@@ -42,14 +35,6 @@ const Dashboard: React.FC = () => {
           variant="danger"
           trend={{ value: 12, isPositive: false }}
           navigateTo="/alerts"
-        />
-        <StatCard
-          title="PPE Compliance"
-          value={`${stats.complianceRate}%`}
-          icon={ShieldCheck}
-          variant="success"
-          trend={{ value: 2.3, isPositive: true }}
-          navigateTo="/reports"
         />
       </div>
 
