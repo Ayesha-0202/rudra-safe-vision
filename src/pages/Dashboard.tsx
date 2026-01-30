@@ -1,15 +1,28 @@
 import React from 'react';
 import { Video, AlertTriangle } from 'lucide-react';
-import { cameras, violations, getStatistics } from '@/data/mockData';
+import { reportData, getStatistics } from '@/data/mockData';
 import StatCard from '@/components/dashboard/StatCard';
-import CameraGrid from '@/components/dashboard/CameraGrid';
-import AlertsList from '@/components/dashboard/AlertsList';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend,
+} from 'recharts';
+
+// Helper to format date as DD/MM/YYYY
+const formatDateDDMMYYYY = (dateStr: string) => {
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+};
 
 const Dashboard: React.FC = () => {
   const stats = getStatistics();
-  const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
@@ -38,35 +51,75 @@ const Dashboard: React.FC = () => {
         />
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Camera Grid Section */}
-        <div className="xl:col-span-2 bg-card rounded-lg border border-border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Live Camera Feeds</h2>
-              <p className="text-sm text-muted-foreground">
-                {stats.onlineCameras} of {stats.totalCameras} cameras online
-              </p>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => navigate('/cameras')}>
-              View All
-            </Button>
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* Compliance Rate Trend Chart */}
+        <div className="bg-card rounded-lg border border-border p-5">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Compliance Rate Trend</h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={reportData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                  tickFormatter={(value) => formatDateDDMMYYYY(value).slice(0, 5)}
+                />
+                <YAxis
+                  domain={[85, 100]}
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                  tickFormatter={(value) => `${value}%`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                  formatter={(value: number) => [`${value}%`, 'Compliance Rate']}
+                  labelFormatter={(label) => formatDateDDMMYYYY(label)}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="complianceRate"
+                  stroke="hsl(var(--success))"
+                  strokeWidth={2}
+                  dot={{ fill: 'hsl(var(--success))', strokeWidth: 2 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
-          <CameraGrid cameras={cameras} maxDisplay={4} />
         </div>
 
-        {/* Alerts Section */}
+        {/* Violations by Type Chart */}
         <div className="bg-card rounded-lg border border-border p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">PPE Violations</h2>
-              <p className="text-sm text-muted-foreground">
-                {stats.activeViolations} active alerts
-              </p>
-            </div>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Violations by Type</h3>
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={reportData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                  tickFormatter={(value) => formatDateDDMMYYYY(value).slice(0, 5)}
+                />
+                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                  }}
+                  labelFormatter={(label) => formatDateDDMMYYYY(label)}
+                />
+                <Legend />
+                <Bar dataKey="helmetViolations" name="Helmet" fill="hsl(var(--destructive))" />
+                <Bar dataKey="vestViolations" name="Vest" fill="hsl(var(--warning))" />
+                <Bar dataKey="glovesViolations" name="Gloves" fill="hsl(var(--primary))" />
+                <Bar dataKey="maskViolations" name="Mask" fill="hsl(280 60% 60%)" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-          <AlertsList violations={violations} maxDisplay={5} showViewAll />
         </div>
       </div>
     </div>
